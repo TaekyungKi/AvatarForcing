@@ -1,0 +1,794 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+
+<script type="text/javascript" charset="utf-8" src="https://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
+const carouselState = new Map();
+const carouselTimers = new Map();
+
+function getCarouselTrack(carouselId) {
+    return document.getElementById(`carousel-${carouselId}`);
+}
+
+function getCarouselIndex(carouselId) {
+    return carouselState.get(carouselId) || 0;
+}
+
+function setCarouselIndex(carouselId, index) {
+    carouselState.set(carouselId, index);
+}
+
+function isAnyVideoPlaying(track) {
+    const videos = track.querySelectorAll("video");
+    for (const video of videos) {
+        if (!video.paused && !video.ended && video.readyState > 2) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function moveCarousel(carouselId, direction) {
+    const track = getCarouselTrack(carouselId);
+    if (!track) return;
+    const items = track.children.length;
+    if (!items) return;
+
+    const nextIndex = (getCarouselIndex(carouselId) + direction + items) % items;
+    setCarouselIndex(carouselId, nextIndex);
+    track.style.transform = `translateX(-${nextIndex * 100}%)`;
+
+    const videos = track.querySelectorAll("video");
+    videos.forEach((video, i) => {
+        if (i === nextIndex) {
+            video.currentTime = 0;
+            video.play().catch(() => {});
+        } else {
+            video.pause();
+        }
+    });
+}
+
+function startCarouselAutoRotate(carouselId, intervalMs = 3500) {
+    if (carouselTimers.has(carouselId)) return;
+    const timer = setInterval(() => {
+        const track = getCarouselTrack(carouselId);
+        if (!track) return;
+        if (!isAnyVideoPlaying(track)) {
+            moveCarousel(carouselId, 1);
+        }
+    }, intervalMs);
+    carouselTimers.set(carouselId, timer);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".video-carousel").forEach((carousel) => {
+        const carouselId = carousel.dataset.carousel;
+        if (!carouselId) return;
+        setCarouselIndex(carouselId, 0);
+        startCarouselAutoRotate(carouselId);
+    });
+
+    document.querySelectorAll(".video-carousel.auto-carousel").forEach((carousel) => {
+        const carouselId = carousel.dataset.carousel;
+        if (!carouselId) return;
+        const track = getCarouselTrack(carouselId);
+        if (!track) return;
+        const videos = track.querySelectorAll("video");
+        videos.forEach((video, i) => {
+            video.muted = true;
+            video.playsInline = true;
+            video.addEventListener("ended", () => {
+                moveCarousel(carouselId, 1);
+            });
+            if (i !== 0) {
+                video.pause();
+            }
+        });
+        if (videos.length) {
+            videos[0].play().catch(() => {});
+        }
+    });
+});
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style type="text/css">
+body {
+    font-family: "Titillium Web", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 300;
+    font-size: 17px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media screen and (min-width: 980px){
+    body {
+        width: 980px;
+    }
+}
+
+h1 {
+    font-weight:300;
+    line-height: 1.15em;
+}
+
+h2 {
+    font-size: 1.75em;
+}
+a:link,a:visited {
+    color: #1f4fd8;
+    text-decoration: none;
+}
+a:hover {
+    color: #208799;
+}
+h1 {
+    text-align: center;
+}
+h2,h3 {
+    text-align: left;
+}
+
+h1 {
+    font-size: 40px;
+    font-weight: 500;
+}
+h2 {
+    font-weight: 400;
+    margin: 16px 0px 4px 0px;
+}
+h3 {
+    font-weight: 600;
+    margin: 16px 0px 4px 0px;
+}
+
+.paper-title {
+    padding: 1px 0px 1px 0px;
+}
+section {
+    margin: 32px 0px 32px 0px;
+    text-align: justify;
+    clear: both;
+}
+.col-5 {
+     width: 20%;
+     float: left;
+}
+.col-4 {
+     width: 25%;
+     float: left;
+}
+.col-3 {
+     width: 33%;
+     float: left;
+}
+.col-2 {
+     width: 50%;
+     float: left;
+}
+.col-1 {
+     width: 100%;
+     float: left;
+}
+
+.author-row, .affil-row {
+    font-size: 26px;
+}
+
+.author-row-new {
+    text-align: center;
+}
+
+.author-row-new a {
+    display: inline-block;
+    font-size: 20px;
+    padding: 4px;
+}
+
+.author-row-new sup {
+    color: #313436;
+    font-size: 12px;
+}
+
+.affiliations-new {
+    font-size: 18px;
+    text-align: center;
+    width: 80%;
+    margin: 0 auto;
+    margin-bottom: 20px;
+}
+
+.row {
+    margin: 16px 0px 16px 0px;
+}
+.authors {
+    font-size: 26px;
+}
+.affiliatons {
+    font-size: 18px;
+}
+.equal-contrib {
+    font-size: 14px;
+}
+.affil-row {
+    margin-top: 18px;
+}
+.teaser {
+    max-width: 100%;
+}
+.text-center {
+    text-align: center;  
+}
+.screenshot {
+    width: 256px;
+    border: 1px solid #ddd;
+}
+.screenshot-el {
+    margin-bottom: 16px;
+}
+hr {
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 0;
+}
+.material-icons {
+    vertical-align: -6px;
+}
+p {
+    line-height: 1.25em;
+}
+.caption {
+    font-size: 16px;
+    color: #666;
+    margin-top: 4px;
+    margin-bottom: 10px;
+}
+video {
+    display: block;
+    margin: auto;
+}
+figure {
+    display: block;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+#bibtex pre {
+    font-size: 14px;
+    background-color: #eee;
+    padding: 16px;
+}
+.green {
+    color: #0E710E;
+    font-weight: bold;
+}
+.orange {
+    color: #d35400;
+    font-weight: bold;
+}
+.flex-row {
+    display: flex;
+    flex-flow: row wrap;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.coming-soon {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+}
+
+.paper-btn:hover {
+    color: #FF8563;
+    transform: translateY(-2px);
+}
+
+.paper-btn-parent {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0px;
+    gap: 25px;
+    font-size: 20px;
+}
+
+.github-btn:hover {
+    color: #FF8563;
+    transform: translateY(-2px);
+}
+
+.container {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.venue {
+    font-size: 23px;
+}
+
+.topnav {
+    background-color: #EEEEEE;
+    overflow: hidden;
+}
+
+.topnav div {
+    max-width: 1070px;
+    margin: 0 auto;
+}
+
+.topnav a {
+    display: inline-block;
+    color: black;
+    text-align: center;
+    vertical-align: middle;
+    padding: 16px 16px;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.topnav img {
+    padding: 2px 0px;
+    width: 100%;
+    margin: 0.2em 0px 0.3em 0px;
+    vertical-align: middle;
+}
+
+pre {
+    font-size: 0.9em;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-radius: 3px;
+    background-color: rgb(235, 235, 235);
+    overflow-x: auto;
+}
+
+.download-thumb {
+    display: flex;
+}
+
+@media only screen and (max-width: 620px) {
+    .download-thumb {
+        display: none;
+    }
+}
+
+.paper-stuff {
+    width: 50%;
+    font-size: 20px;
+}
+
+@media only screen and (max-width: 620px) {
+    .paper-stuff {
+        width: 100%;
+    }
+}
+* {
+  box-sizing: border-box;
+}
+
+.column {
+  text-align: center;
+  float: left;
+  width: 16.666%;
+  padding: 5px;
+}
+.column3 {
+  text-align: center;
+  float: left;
+  width: 33.333%;
+  padding: 5px;
+}
+.border-right {
+    border-right: 1px solid black;
+}
+.border-bottom{
+    border-bottom: 1px solid black;
+}
+
+/* Clearfix (clear floats) */
+.row::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.image-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr;
+    gap: 10px;
+    width: 100%; 
+}
+
+.image-grid img {
+    width: 100%; 
+}
+
+.image-grid img:first-child {
+    object-fit: contain;
+}
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 500px) {
+  .column {
+    width: 100%;
+  }
+}
+@media screen and (max-width: 500px) {
+  .column3 {
+    width: 100%;
+  }
+}
+
+.figure img {
+    width: 100%; 
+}
+
+.image-grid-three {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    width: 90%;
+    justify-items: center;
+    margin: 0 auto;
+}
+
+.image-grid-three img {
+    width: 100%; 
+}
+
+.image-grid-tab {
+    text-align: center;
+    justify-content: center;
+    display: grid;
+    place-items: center;
+    grid-template-columns: 1fr 1.22fr;
+    gap: 10px;
+    width: 90%;
+    justify-items: center;
+    margin: 0 auto;
+}
+
+.image-grid-tab img {
+    width: 100%; 
+}
+
+blockquote {
+    background-color: rgba(40, 40, 40, 0.2);
+    padding: 0px;
+    margin: 2px 0;
+    border-radius: 10px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+.video-carousel {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    margin: 16px auto 24px;
+    overflow: hidden;
+}
+
+.video-carousel-track {
+    display: flex;
+    transition: transform 0.4s ease-in-out;
+}
+
+.video-carousel video {
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.4);
+    border: none;
+    color: white;
+    font-size: 24px;
+    padding: 8px 12px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.carousel-btn.left { left: 10px; }
+.carousel-btn.right { right: 10px; }
+
+.carousel-desc {
+    margin: 6px 0 8px 0;
+}
+.method-compare {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    width: var(--compare-width, 100%);
+    max-width: var(--compare-max-width, none);
+    margin: 0 auto;
+}
+.method-compare img {
+    height: 260px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+.emphasis-text {
+    text-align: center;
+    font-weight: 600;
+    font-size: 18px;
+    margin: 3px 0 0 0;
+}
+.method-figure img {
+    height: var(--img-height, 240px);
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+.method-figure {
+    text-align: center;
+}
+.side-by-side {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+.side-by-side img {
+    width: 48%;
+    height: auto;
+}
+.ablation-figure {
+    margin: 0 auto;
+}
+.ablation-text {
+    margin: 0;
+}
+
+
+</style>
+
+<script type="text/javascript" src="../js/hidebib.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Titillium+Web:400,600,400italic,600italic,300,300italic' rel='stylesheet' type='text/css'>
+    <head>
+        <title>Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta property="og:description" content="Representation Alignment for Generation: Training Diffusion Transformers Is Easier Than You Think"/>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link href="https://fonts.googleapis.com/css2?family=FontAwesome" rel="stylesheet">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:creator" content="@sihyun_yu">
+        <meta name="twitter:title" content="Representation Alignment for Generation: Training Diffusion Transformers Is Easier Than You Think">
+    </head>
+
+ <body>
+<div class="container">
+    <div class="paper-title">
+    <h1>
+        <b>Avatar Forcing</b>: <br> Real-Time Interactive Head Avatar Generation for Natural Conversation
+    </h1>
+    </div>
+
+    <div id="authors">
+        <center>
+            <div class="author-row-new">
+                <a href="https://taekyungki.github.io">Taekyung Ki<sup>1,*</sup></a>,
+                <a href="https://agwmon.github.io">Sangwon Jang<sup>1,*</sup></a>,
+                <a href="https://harryjo97.github.io">Jaehyeong Jo<sup>1</sup></a>,
+                <a href="https://jaehong31.github.io">Jaehong Yoon<sup>2</sup></a>,
+                <a href="http://www.sungjuhwang.com">Sung Ju Hwang<sup>1,3</sup></a>
+            </div>
+        </center>
+        <center>
+        <div class="affiliations">
+            <span><sup>1</sup>KAIST</span>&nbsp;&nbsp;&nbsp;
+            <span><sup>2</sup>NTU Singapore</span>&nbsp;&nbsp;&nbsp;
+            <span><sup>3</sup>DeepAuto.ai</span> <br>
+        </div>
+
+        <p class="equal-contrib"><span><sup>*</sup>Equal Contribution</span></p>
+        
+        <div class="affil-row">
+            <div class="venue text-center"><b>ArXiv 2026</b></div>
+        </div>
+        </center>
+
+        <div style="clear: both">
+            <div class="paper-btn-parent">
+                <a class="paper-btn" href="http://arxiv.org/abs/2410.06940">
+                    <span class="fas fa-file-alt"></span> 
+                    Paper
+                </a>   
+                <a class="github-btn" href="https://github.com/sihyun-yu/REPA">
+                    <span class="fab fa-github"></span> 
+                    Code
+                </a>           
+        </div>
+        <p style="text-align: center;"> ** The code and weights will be released soon. **</p>
+        <p style="text-align: center;"> All videos in this page contain audio.</p>
+        </div>
+        <div class="video-carousel auto-carousel" data-carousel="c5">
+            <button class="carousel-btn left" onclick="moveCarousel('c5', -1)">&#10094;</button>
+            <button class="carousel-btn right" onclick="moveCarousel('c5', 1)">&#10095;</button>
+            <div class="video-carousel-track" id="carousel-c5">
+                <video controls playsinline muted>
+                    <source src="assets/videos/rumi_interface_01.mp4" type="video/mp4">
+                </video>
+                <video controls playsinline muted>
+                    <source src="assets/videos/rumi_interface_02.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+        <blockquote>    
+            <p>
+                <b>[TL;DR]</b> We present <b>Avatar Forcing</b>, a diffusion forcing-based head avatar generation model that can interact with users through their audio-visual signals at low latency.
+                We improve interactive motions (e.g., active listening) through <b>preference optimization</b> by utilizing synthesized motion latents.
+            </p>
+        </blockquote>
+    </div>
+    <br>
+
+    <section>
+        <h2>Methods</h2>
+        <hr>
+        <h3>Causal Motion Generation with Diffusion Forcing</h3>
+        <p> 
+            Conventional bidirectional DiT (used in INFP, CVPR 2025) generates long-range motion latent chunks that include future latents for temporal consistency.
+            This design naturally restricts real-time interaction with users, apart from inference time.
+            Avatar Forcing causally generates motion latents based on diffusion forcing, allowing interaction with users through their multimodal audio-visual signals.
+            We introduce blockwise causal look-ahead masks for motion latent generation, which address temporal inconsistency between adjacent motion blocks.
+        </p>
+            <div class="method-compare">
+                <img src="assets/images/vs_bidirectional.png" alt="PDF Image">
+                <img src="assets/images/mask.png" alt="PDF Image">
+            </div>
+        <br><br>
+        <h3>Expressive & Engaging Interactive Motion Generation with Direct Preference Optimization (DPO)</h3>
+            <p>
+                We observe that listening avatar videos show less expressive or less active motions than talking avatar videos.
+                Modeling listening motion generation on these videos leads to stiff or static motion generation.
+                This limitation highlights the necessity of quantifying activeness or naturalness, or alternatively using human labels; however, obtaining such consistent measurements or labels is difficult.
+                <div class="figure method-figure" style="--img-height: 200px;">
+                    <img src="assets/images/data-dist.png" alt="PDF Image">
+                </div>
+            </p>
+            <p> 
+                To tackle this problem, we introduce direct preference optimization (DPO) targeting more engaing and more active motion generation, leveraging synthesized non-active motion latents as less-preferred samples.
+                This learning-from-losing paradigm significantly improves motion activeness and naturalness in a cost-effective way. We reformulate DPO post-training obejctive in the context of the diffusion forcing framework.
+                <div class="figure method-figure" style="--img-height: 100px;">
+                    <img src="assets/images/dpo.png" alt="PDF Image">
+                </div>
+            </p>
+
+    </section>
+    
+    <section>
+        <h2>Results</h2>
+        <hr>
+        <h3>Comparison with Baselines</h3>
+        <p>
+            Avatar Forcing outperforms baselines across four metric categories: Reactiveness, Motion Richness, Visual Quality, and Lip Sync.
+            In particular, it achieves superior rPCC scores, which measure the correlation between user and avatar motions.
+            Avatar Forcing also achieves strong performance in a human evaluation study.
+            <div class="figure method-figure" style="--img-height: 145px;">
+                <img src="assets/images/quantitative.png" alt="PDF Image">
+                <img src="assets/images/human-eval.png" alt="PDF Image">
+            </div>
+        </p>
+
+        <p>We qualitatively compare Avatar Forcing with INFP using the demo video of INFP, as their official implementation is not available.
+            <div class="figure">
+                <video autoplay muted loop controls playsinline style="width: 100%;">
+                    <source src="assets/videos/main_compare.mp4" type="video/mp4">
+                </video>
+            </div>
+        </p>
+        <p> </p>
+        <div class="video-carousel" data-carousel="c3">
+            <button class="carousel-btn left" onclick="moveCarousel('c3', -1)">&#10094;</button>
+            <button class="carousel-btn right" onclick="moveCarousel('c3', 1)">&#10095;</button>
+        <p> We also reprouce INFP, denoted as INFP*, and compare with it.</p>
+            <div class="video-carousel-track" id="carousel-c3">
+                <video muted controls playsinline>
+                    <source src="assets/videos/01_compare_interactive_01.mp4" type="video/mp4">
+                </video>
+                <video muted controls playsinline>
+                    <source src="assets/videos/01_compare_interactive_02.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+        <br>
+
+        <h3>Ablation Studies</h3>
+        <p class="ablation-text"> We conduct ablation studies on our key components: DPO and user's motion latent. Note the proposed DPO strategy significantly improves the reactiveness and motion richness.
+            Additionally, we can generate more reactive facial expression (e.g., mirroring) when incorporating the user's motion for the avatar motion generation.</p>
+        <br>
+            <div class="figure method-figure ablation-figure" style="--img-height: 150px;">
+            <img src="assets/images/ablation1.png" alt="PDF Image">
+        </div>
+        <div class="figure method-figure side-by-side ablation-figure">
+            <img src="assets/images/ablation_dpo.png" alt="PDF Image">
+            <img src="assets/images/ablation_user_motion.png" alt="PDF Image">
+        </div>
+        <br>
+        <p>We provide the video results including the blockwise causal look-ahead mask that help better illustrate the ablation study.
+        <div class="video-carousel" data-carousel="c7">
+            <button class="carousel-btn left" onclick="moveCarousel('c7', -1)">&#10094;</button>
+            <button class="carousel-btn right" onclick="moveCarousel('c7', 1)">&#10095;</button>
+            <div class="video-carousel-track" id="carousel-c7">
+                <video muted controls playsinline>
+                    <source src="assets/videos/02_ablation_wo_DPO.mp4" type="video/mp4">
+                </video>
+                <video muted controls playsinline>
+                    <source src="assets/videos/02_ablation_wo_user_motion.mp4" type="video/mp4">
+                </video>
+                <video muted controls playsinline>
+                    <source src="assets/videos/02_ablation_attention_mask_01.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+        </p>
+
+        <br>
+        <h2>Additional Results</h2>
+        <hr>
+        <h3>Talking Avatar Generation</h3>
+        <p class="carousel-desc"> We compare our method with talking avatar geneartion methods on HDTF. Avatar Forcing can produce compretitive head avatar videos compared to SOTA methods.</p>
+            <div class="video-carousel" data-carousel="c1">
+                <button class="carousel-btn left" onclick="moveCarousel('c1', -1)">&#10094;</button>
+                <button class="carousel-btn right" onclick="moveCarousel('c1', 1)">&#10095;</button>
+                <div class="video-carousel-track" id="carousel-c1">
+                    <video muted controls playsinline>
+                        <source src="assets/videos/talking_01.mp4" type="video/mp4">
+                    </video>
+                    <video muted controls playsinline>
+                        <source src="assets/videos/talking_02.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+        <h3>Listening Avatar Generation</h3>
+        <p class="carousel-desc"> We compare our method with listening avatar geneartion methods on ViCo. Avatar Forcing can produce compretitive head avatar videos compared to SOTA methods.</p>
+        <div class="video-carousel" data-carousel="c2">
+            <button class="carousel-btn left" onclick="moveCarousel('c2', -1)">&#10094;</button>
+            <button class="carousel-btn right" onclick="moveCarousel('c2', 1)">&#10095;</button>
+            <div class="video-carousel-track" id="carousel-c2">
+                <video muted controls playsinline>
+                    <source src="assets/videos/listening_01.mp4" type="video/mp4">
+                </video>
+                <video muted controls playsinline>
+                    <source src="assets/videos/listening_02.mp4" type="video/mp4">
+                </video>
+            </div>
+        </div>
+    </section>
+
+    <section id="bibtex">
+        <h2>Citation</h2>
+        <hr>
+        <pre><code>@article{ki2026avatarforcing,
+    title={Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation}, 
+    author={Taekyung Ki  and  Sangwon Jangand Jaehyeong Jo and Jaehong Yoon and Sung Ju Hwang},
+    journal={arXiv preprint arXiv:2506.07177},
+    year={2026},
+}
+</code></pre>
+
+    </section>
+    <section>
+        <h2>Acknowledgement</h2>
+        <hr> <p>The source images and audio are collected from datasets or generated by Gemini. This page is based on <a href="https://sihyun.me/REPA/">REPA</a>.</p>
+    </section>
+
+</div>
+</body>
+</html>

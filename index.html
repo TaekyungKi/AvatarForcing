@@ -38,16 +38,6 @@ function moveCarousel(carouselId, direction) {
     const nextIndex = (getCarouselIndex(carouselId) + direction + items) % items;
     setCarouselIndex(carouselId, nextIndex);
     track.style.transform = `translateX(-${nextIndex * 100}%)`;
-
-    const videos = track.querySelectorAll("video");
-    videos.forEach((video, i) => {
-        if (i === nextIndex) {
-            video.currentTime = 0;
-            video.play().catch(() => {});
-        } else {
-            video.pause();
-        }
-    });
 }
 
 function startCarouselAutoRotate(carouselId, intervalMs = 3500) {
@@ -76,19 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const track = getCarouselTrack(carouselId);
         if (!track) return;
         const videos = track.querySelectorAll("video");
-        videos.forEach((video, i) => {
+        videos.forEach((video) => {
             video.muted = true;
             video.playsInline = true;
-            video.addEventListener("ended", () => {
-                moveCarousel(carouselId, 1);
-            });
-            if (i !== 0) {
-                video.pause();
-            }
         });
-        if (videos.length) {
-            videos[0].play().catch(() => {});
-        }
     });
 });
 </script>
@@ -605,11 +586,11 @@ blockquote {
 
         <div style="clear: both">
             <div class="paper-btn-parent">
-                <a class="paper-btn" href="http://arxiv.org/abs/2410.06940">
+                <a class="paper-btn" href="">
                     <span class="fas fa-file-alt"></span> 
                     Paper
                 </a>   
-                <a class="github-btn" href="https://github.com/sihyun-yu/REPA">
+                <a class="github-btn" href="https://github.com/TaekyungKi/AvatarForcing">
                     <span class="fab fa-github"></span> 
                     Code
                 </a>           
@@ -631,8 +612,8 @@ blockquote {
         </div>
         <blockquote>    
             <p>
-                <b>[TL;DR]</b> We present <b>Avatar Forcing</b>, a diffusion forcing-based head avatar generation model that can interact with users through their audio-visual signals at low latency on a single H100 GPU (12GB).
-                We improve interactive motions (e.g., active listening) through <b>preference optimization</b> by utilizing synthesized motion latents as less preferred samples.
+                <b>[TL;DR]</b> We present <b>Avatar Forcing</b>, a diffusion forcing-based head avatar generation model that can interact with users through their audio-visual signals at low latency.
+                We improve interactive motions (e.g., active listening) through <b>preference optimization</b> by utilizing synthesized motion latents.
             </p>
         </blockquote>
     </div>
@@ -648,9 +629,8 @@ blockquote {
             Avatar Forcing causally generates motion latents based on diffusion forcing, allowing interaction with users through their multimodal audio-visual signals.
             We introduce blockwise causal look-ahead masks for motion latent generation, which address temporal inconsistency between adjacent motion blocks.
         </p>
-            <div class="method-compare">
-                <img src="assets/images/vs_bidirectional.png" alt="PDF Image">
-                <img src="assets/images/mask.png" alt="PDF Image">
+            <div class="figure method-figure" style="--img-height: 250px;">
+                <img src="assets/images/method.png" alt="PDF Image">
             </div>
         <br><br>
         <h3>Expressive & Engaging Interactive Motion Generation with Direct Preference Optimization (DPO)</h3>
@@ -688,7 +668,7 @@ blockquote {
 
         <p>We qualitatively compare Avatar Forcing with INFP using the demo video of INFP, as their official implementation is not available.
             <div class="figure">
-                <video autoplay muted loop controls playsinline style="width: 100%;">
+                <video muted loop controls playsinline style="width: 100%;">
                     <source src="assets/videos/main_compare.mp4" type="video/mp4">
                 </video>
             </div>

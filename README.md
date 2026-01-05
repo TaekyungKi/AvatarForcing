@@ -3,11 +3,10 @@ Official Pytorch Implementation of Avatar Forcing; Motion Latent Diffusion Forci
 
 ![preview](./assets/overview.png)
 
-## Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation
+### Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation
 
-[Taekyung Ki<sup>1</sup>*](https://taekyungki.github.io), &nbsp; [Sangwon Jang<sup>1</sup>*](https://agwmon.github.io/), &nbsp; [Jaehyeong Jo<sup>1</sup>](https://harryjo97.github.io/), &nbsp; [Jaehong Yoon<sup>2</sup>](https://jaehong31.github.io/), &nbsp;[Sung Ju hwang<sup>1,3</sup>](http://www.sungjuhwang.com/)
-
-<sup>1</sup>KAIST &nbsp; &nbsp; <sup>2</sup>NTU Singapore &nbsp; &nbsp; <sup>3</sup>DeepAuto.ai &nbsp; &nbsp; &nbsp; &nbsp; <sup>*</sup>Equal contribution
+[Taekyung Ki<sup>1</sup>*](https://taekyungki.github.io), &nbsp; [Sangwon Jang<sup>1</sup>*](https://agwmon.github.io/), &nbsp; [Jaehyeong Jo<sup>1</sup>](https://harryjo97.github.io/), &nbsp; [Jaehong Yoon<sup>2</sup>](https://jaehong31.github.io/), &nbsp;[Sung Ju hwang<sup>1,3</sup>](http://www.sungjuhwang.com/) <br>
+<sup>1</sup>KAIST &nbsp; <sup>2</sup>NTU Singapore &nbsp; <sup>3</sup>DeepAuto.ai &nbsp; &nbsp; &nbsp; &nbsp; <sup>*</sup>Equal contribution
 
 [![Project Page](https://img.shields.io/badge/Project-Page-green)](https://taekyungki.github.io/AvatarForcing/)
 [![arXiv](https://img.shields.io/badge/arXiv-2601.00664-b31b1b?logo=arxiv)](https://arxiv.org/abs/2601.00664v1)

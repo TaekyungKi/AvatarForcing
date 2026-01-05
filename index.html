@@ -6,6 +6,7 @@
 <script>
 const carouselState = new Map();
 const carouselTimers = new Map();
+let activeVideo = null;
 
 function getCarouselTrack(carouselId) {
     return document.getElementById(`carousel-${carouselId}`);
@@ -29,6 +30,29 @@ function isAnyVideoPlaying(track) {
     return false;
 }
 
+function isAnyVideoPlayingGlobal() {
+    const videos = document.querySelectorAll("video");
+    for (const video of videos) {
+        if (!video.paused && !video.ended && video.readyState > 2) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function tryAutoPlay(video) {
+    if (!video) return;
+    const playPromise = video.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+            const onReady = () => {
+                video.play().catch(() => {});
+            };
+            video.addEventListener("canplay", onReady, { once: true });
+        });
+    }
+}
+
 function moveCarousel(carouselId, direction) {
     const track = getCarouselTrack(carouselId);
     if (!track) return;
@@ -38,6 +62,12 @@ function moveCarousel(carouselId, direction) {
     const nextIndex = (getCarouselIndex(carouselId) + direction + items) % items;
     setCarouselIndex(carouselId, nextIndex);
     track.style.transform = `translateX(-${nextIndex * 100}%)`;
+
+    const carousel = document.querySelector(`.video-carousel[data-carousel="${carouselId}"]`);
+    if (carousel && carousel.dataset.autoplay === "true" && !isAnyVideoPlayingGlobal()) {
+        const activeVideo = track.children[nextIndex]?.querySelector("video");
+        tryAutoPlay(activeVideo);
+    }
 }
 
 function startCarouselAutoRotate(carouselId, intervalMs = 3500) {
@@ -45,11 +75,31 @@ function startCarouselAutoRotate(carouselId, intervalMs = 3500) {
     const timer = setInterval(() => {
         const track = getCarouselTrack(carouselId);
         if (!track) return;
-        if (!isAnyVideoPlaying(track)) {
+        if (!isAnyVideoPlaying(track) && !isAnyVideoPlayingGlobal()) {
             moveCarousel(carouselId, 1);
         }
     }, intervalMs);
     carouselTimers.set(carouselId, timer);
+}
+
+function pauseOtherVideos(currentVideo) {
+    document.querySelectorAll("video").forEach((video) => {
+        if (video !== currentVideo) {
+            video.pause();
+        }
+    });
+}
+
+function setActiveVideo(video) {
+    if (!video) return;
+    if (activeVideo && activeVideo !== video) {
+        activeVideo.pause();
+    }
+    if (video.hasAttribute("autoplay")) {
+        video.removeAttribute("autoplay");
+    }
+    activeVideo = video;
+    pauseOtherVideos(video);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -71,6 +121,40 @@ document.addEventListener("DOMContentLoaded", () => {
             video.playsInline = true;
         });
     });
+
+    document.querySelectorAll(".video-carousel[data-autoplay='true']").forEach((carousel) => {
+        const carouselId = carousel.dataset.carousel;
+        if (!carouselId) return;
+        const track = getCarouselTrack(carouselId);
+        if (!track) return;
+        const videos = track.querySelectorAll("video");
+        videos.forEach((video) => {
+            video.muted = true;
+            video.playsInline = true;
+        });
+        const firstVideo = track.children[0]?.querySelector("video");
+        if (!isAnyVideoPlayingGlobal()) {
+            tryAutoPlay(firstVideo);
+        }
+    });
+
+    document.querySelectorAll("video").forEach((video) => {
+        video.addEventListener("play", () => setActiveVideo(video));
+    });
+
+    document.addEventListener("play", (event) => {
+        const target = event.target;
+        if (target && target.tagName === "VIDEO") {
+            setActiveVideo(target);
+        }
+    }, true);
+
+    document.addEventListener("playing", (event) => {
+        const target = event.target;
+        if (target && target.tagName === "VIDEO") {
+            setActiveVideo(target);
+        }
+    }, true);
 });
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -586,7 +670,7 @@ blockquote {
 
         <div style="clear: both">
             <div class="paper-btn-parent">
-                <a class="paper-btn" href="">
+                <a class="paper-btn" href="https://arxiv.org/abs/2601.00664">
                     <span class="fas fa-file-alt"></span> 
                     Paper
                 </a>   
@@ -598,11 +682,11 @@ blockquote {
         <p style="text-align: center;"> ** The code will be released soon. **</p>
         <p style="text-align: center;"> All videos in this page contain audio.</p>
         </div>
-        <div class="video-carousel auto-carousel" data-carousel="c5">
+        <div class="video-carousel auto-carousel" data-carousel="c5" data-autoplay="true">
             <button class="carousel-btn left" onclick="moveCarousel('c5', -1)">&#10094;</button>
             <button class="carousel-btn right" onclick="moveCarousel('c5', 1)">&#10095;</button>
             <div class="video-carousel-track" id="carousel-c5">
-                <video controls playsinline muted>
+                <video controls playsinline muted autoplay>
                     <source src="assets/videos/rumi_interface_01.mp4" type="video/mp4">
                 </video>
                 <video controls playsinline muted>
@@ -612,8 +696,8 @@ blockquote {
         </div>
         <blockquote>    
             <p>
-                <b>[TL;DR]</b> We present <b>Avatar Forcing</b>, a diffusion forcing-based head avatar generation model that can interact with users through their audio-visual signals at low latency.
-                We improve interactive motions (e.g., active listening) through <b>preference optimization</b> by utilizing synthesized motion latents.
+                <b>[TL;DR]</b> We present <b>Avatar Forcing</b>, a diffusion forcing-based head avatar generation model that can interact with users through their audio-visual signals at low latency on a single GPU (H100, 14GB).
+                We improve interactive motions (e.g., active listening) through <b>preference optimization</b> by utilizing synthesized motion latents as losing samples.
             </p>
         </blockquote>
     </div>
@@ -629,8 +713,9 @@ blockquote {
             Avatar Forcing causally generates motion latents based on diffusion forcing, allowing interaction with users through their multimodal audio-visual signals.
             We introduce blockwise causal look-ahead masks for motion latent generation, which address temporal inconsistency between adjacent motion blocks.
         </p>
-            <div class="figure method-figure" style="--img-height: 250px;">
-                <img src="assets/images/method.png" alt="PDF Image">
+            <div class="method-compare">
+                <img src="assets/images/vs_bidirectional.png" alt="PDF Image">
+                <img src="assets/images/mask.png" alt="PDF Image">
             </div>
         <br><br>
         <h3>Expressive & Engaging Interactive Motion Generation with Direct Preference Optimization (DPO)</h3>
@@ -668,7 +753,7 @@ blockquote {
 
         <p>We qualitatively compare Avatar Forcing with INFP using the demo video of INFP, as their official implementation is not available.
             <div class="figure">
-                <video muted loop controls playsinline style="width: 100%;">
+                <video loop controls playsinline style="width: 100%;">
                     <source src="assets/videos/main_compare.mp4" type="video/mp4">
                 </video>
             </div>
@@ -678,11 +763,11 @@ blockquote {
             <button class="carousel-btn left" onclick="moveCarousel('c3', -1)">&#10094;</button>
             <button class="carousel-btn right" onclick="moveCarousel('c3', 1)">&#10095;</button>
         <p> We also reprouce INFP, denoted as INFP*, and compare with it.</p>
-            <div class="video-carousel-track" id="carousel-c3">
-                <video muted controls playsinline>
+        <div class="video-carousel-track" id="carousel-c3">
+                <video controls playsinline>
                     <source src="assets/videos/01_compare_interactive_01.mp4" type="video/mp4">
                 </video>
-                <video muted controls playsinline>
+                <video controls playsinline>
                     <source src="assets/videos/01_compare_interactive_02.mp4" type="video/mp4">
                 </video>
             </div>
@@ -706,13 +791,13 @@ blockquote {
             <button class="carousel-btn left" onclick="moveCarousel('c7', -1)">&#10094;</button>
             <button class="carousel-btn right" onclick="moveCarousel('c7', 1)">&#10095;</button>
             <div class="video-carousel-track" id="carousel-c7">
-                <video muted controls playsinline>
+                <video controls playsinline>
                     <source src="assets/videos/02_ablation_wo_DPO.mp4" type="video/mp4">
                 </video>
-                <video muted controls playsinline>
+                <video controls playsinline>
                     <source src="assets/videos/02_ablation_wo_user_motion.mp4" type="video/mp4">
                 </video>
-                <video muted controls playsinline>
+                <video controls playsinline>
                     <source src="assets/videos/02_ablation_attention_mask_01.mp4" type="video/mp4">
                 </video>
             </div>
@@ -728,10 +813,10 @@ blockquote {
                 <button class="carousel-btn left" onclick="moveCarousel('c1', -1)">&#10094;</button>
                 <button class="carousel-btn right" onclick="moveCarousel('c1', 1)">&#10095;</button>
                 <div class="video-carousel-track" id="carousel-c1">
-                    <video muted controls playsinline>
+                    <video controls playsinline>
                         <source src="assets/videos/talking_01.mp4" type="video/mp4">
                     </video>
-                    <video muted controls playsinline>
+                    <video controls playsinline>
                         <source src="assets/videos/talking_02.mp4" type="video/mp4">
                     </video>
                 </div>
@@ -742,10 +827,10 @@ blockquote {
             <button class="carousel-btn left" onclick="moveCarousel('c2', -1)">&#10094;</button>
             <button class="carousel-btn right" onclick="moveCarousel('c2', 1)">&#10095;</button>
             <div class="video-carousel-track" id="carousel-c2">
-                <video muted controls playsinline>
+                <video controls playsinline>
                     <source src="assets/videos/listening_01.mp4" type="video/mp4">
                 </video>
-                <video muted controls playsinline>
+                <video controls playsinline>
                     <source src="assets/videos/listening_02.mp4" type="video/mp4">
                 </video>
             </div>

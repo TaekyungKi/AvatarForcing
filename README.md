@@ -1,9 +1,9 @@
-# Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation
+# [CVPR 2026] Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation
 Official Pytorch Implementation of Avatar Forcing; Motion Latent Diffusion Forcing for Interactive Head Avatar Generation
 
 ![preview](./assets/overview.png)
 
-### Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation
+### [CVPR 2026] Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation
 
 [Taekyung Ki<sup>1</sup>*](https://taekyungki.github.io), &nbsp; [Sangwon Jang<sup>1</sup>*](https://agwmon.github.io/), &nbsp; [Jaehyeong Jo<sup>1</sup>](https://harryjo97.github.io/), &nbsp; [Jaehong Yoon<sup>2</sup>](https://jaehong31.github.io/), &nbsp;[Sung Ju hwang<sup>1,3</sup>](http://www.sungjuhwang.com/) <br>
 <sup>1</sup>KAIST &nbsp; <sup>2</sup>NTU Singapore &nbsp; <sup>3</sup>DeepAuto.ai &nbsp; &nbsp; &nbsp; &nbsp; <sup>*</sup>Equal contribution

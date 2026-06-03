@@ -1,4 +1,4 @@
-import os, copy, pickle, torch, yaml, random, json, cv2, torchvision, subprocess, argparse, uuid, datetime, tempfile, librosa
+import os, copy, pickle, torch, yaml, random, json, cv2, torchvision, subprocess, argparse, uuid, datetime, tempfile, librosa, face_alignment
 
 import numpy as np
 import pandas as pd
@@ -26,6 +26,7 @@ class DataProcessor:
 
         # wav2vec2 audio preprocessor
         self.wav2vec_preprocessor = Wav2Vec2FeatureExtractor.from_pretrained(opt.wav2vec_model_path, local_files_only=True)
+        self.fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=False)
 
         # image transform 
         self.transform = A.Compose([
@@ -33,13 +34,43 @@ class DataProcessor:
                 A.Normalize(mean=(0.5,0.5,0.5), std=(0.5,0.5,0.5)),
                 A_pytorch.ToTensorV2()])
 
+    def default_aud_loader(self, path: str) -> torch.Tensor:
+        speech_array, sampling_rate = librosa.load(path, sr=self.sampling_rate)
+        return self.wav2vec_preprocessor(speech_array, sampling_rate=sampling_rate, return_tensors='pt').input_values[0]
+
     def default_img_loader(self, path:str) -> np.ndarray:
         img = cv2.imread(path)
         return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    def default_aud_loader(self, path: str) -> torch.Tensor:
-        speech_array, sampling_rate = librosa.load(path, sr=self.sampling_rate)
-        return self.wav2vec_preprocessor(speech_array, sampling_rate=sampling_rate, return_tensors='pt').input_values[0]
+    def preprocess_face(self, image_path: str, pad_ratio: float=1.0):
+        image = self.default_img_loader(image_path)
+        h, w = image.shape[0:2]
+        mult = 360. / image.shape[0]
+
+        resized_image = cv2.resize(image, dsize=(0, 0), fx = mult, fy = mult, interpolation=cv2.INTER_AREA if mult < 1. else cv2.INTER_CUBIC)        
+        bboxes = self.fa.face_detector.detect_from_image(resized_image)
+        bboxes = [(int(x1 / mult), int(y1 / mult), int(x2 / mult), int(y2 / mult), score) for (x1, y1, x2, y2, score) in bboxes if score > 0.95]
+        bboxes = bboxes[0]
+
+        bsy = int((bboxes[3] - bboxes[1]) / 2)
+        bsx = int((bboxes[2] - bboxes[0]) / 2)
+        my  = int((bboxes[1] + bboxes[3]) / 2)
+        mx  = int((bboxes[0] + bboxes[2]) / 2)
+
+        bs = int(max(bsy, bsx) * (1+pad_ratio))
+        x1, y1 = mx - bs, my - bs
+        x2, y2 = mx + bs, my + bs
+        x1, y1 = max(x1, 0), max(y1, 0)
+        x2, y2 = min(x2, w), min(y2, h)
+
+        bsx, bsy = x2 - x1, y2 - y1
+        mx, my = int(x1 + bsx // 2), int(y1 + bsy // 2)
+        bs = int(min(bsx, bsy) // 2)
+
+        face = image[my - bs: my + bs, mx-bs:mx + bs]
+        face = cv2.resize(face, dsize=(self.opt.input_size, self.opt.input_size), interpolation = cv2.INTER_AREA if mult < 1. else cv2.INTER_CUBIC)
+        return face
+
 
     def preprocess(self, avatar_ref_path: str, avatar_audio_path: str, user_audio_path: str, user_video_path: str) -> dict:
         max_len    = int(30 * self.fps)            # maximum 30 seconds
@@ -63,7 +94,8 @@ class DataProcessor:
         else:
             user_frames = None
 
-        avatar_ref = self.default_img_loader(avatar_ref_path)
+        # avatar_ref = self.default_img_loader(avatar_ref_path)
+        avatar_ref = self.preprocess_face(avatar_ref_path)
         avatar_ref = self.transform(image=avatar_ref)["image"].unsqueeze(0)
 
         data = {

@@ -3,13 +3,6 @@ import numpy as np
 from tqdm import tqdm
 from pathlib import Path
 
-def extract_audio(input_video: str, output_audio: str, sr=16000):
-    """Extract audio (wav) from video using ffmpeg."""
-    output_audio = str(Path(output_audio))
-    cmd = ["ffmpeg", "-y", "-i", input_video, "-vn", "-ac", "1", "-ar", str(sr), "-f", "wav", output_audio]
-    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-    return output_audio
-
 class UserVideoProcessor:
     def __init__(self, opt):
         self.opt = opt
@@ -82,7 +75,7 @@ class UserVideoProcessor:
             cv2.imwrite(os.path.join(output_dir, os.path.basename(frame_path)), face)
         return face
 
-    def prepare_user_video(self, video_path: str, output_path: str, pad_ratio: float=0.6) -> None:
+    def prepare_user_video(self, video_path: str, output_path: str, pad_ratio: float=1.0) -> None:
         output_path = os.path.join(output_path, os.path.basename(video_path)[:-4])
         os.makedirs(output_path, exist_ok=True)
         self.extract_audio(video_path, output_path + ".wav")

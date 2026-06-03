@@ -21,14 +21,6 @@ Official Pytorch Implementation of Avatar Forcing; Motion Latent Diffusion Forci
 Talking head generation creates lifelike avatars from static portraits for virtual communication and content creation. However, current models do not yet convey the feeling of truly interactive communication, often generating one-way responses that lack emotional engagement. We identify two key challenges toward truly interactive avatars: generating motion in real-time under causal constraints and learning expressive, vibrant reactions without additional labeled data. To address these challenges, we propose Avatar Forcing, a new framework for interactive head avatar generation that models real-time user-avatar interactions through diffusion forcing. This design allows the avatar to process real-time multimodal inputs, including the user's audio and motion, with low latency for instant reactions to both verbal and non-verbal cues such as speech, nods, and laughter. Furthermore, we introduce a direct preference optimization method that leverages synthetic losing samples constructed by dropping user conditions, enabling label-free learning of expressive interaction. Experimental results demonstrate that our framework enables real-time interaction with low latency (approximately 500ms), achieving 6.8x speedup compared to the baseline, and produces reactive and expressive avatar motion, which is preferred over 80% against the baseline.
 
 
-## Generated Results
-
-| Result (Avatar Only)  | Result (w/ User) |
-|---------------|---------|
-| <video src="https://github.com/user-attachments/assets/7b49b867-1901-4b1b-b79a-3aa0727d8a70"> </video> | <video src="https://github.com/user-attachments/assets/7b49b867-1901-4b1b-b79a-3aa0727d8a70"> </video> |
-
-
-
 ## Getting Started
 ### Requirements
 
@@ -84,9 +76,10 @@ Please use [IIANet](https://github.com/JusperLee/IIANet) for target speaker extr
 
 #### 2. User Video Pre-processing
 ```bash
-python preprocess_user_video.py --user_video_path data/user.mp4 --output_path data/user
+python preprocess_user_video.py --user_video_path data/user.mp4 --output_path data --pad_ratio 1.0
 ```
-This script converts given user video into video frames of 25fps () and crop the facial region for better conditioning. Please adjust the `--crop` (default: `0.6`) if you want to scale the size of the bbox.
+The outputs will be the frames of input user video and its audio. This script converts given user video into video frames of 25fps and crop the facial region for better conditioning. Please adjust the `--pad_ratio` (default: `1.0`) if you want to scale the size of the bbox.
+
 
 ### Inference
 
@@ -126,6 +119,7 @@ Note that you can also use Avatar Forcing for **talking-only** or **Listening-on
 - INFP: Audio-Driven Interactive Head Generation in Dyadic Conversations [CVPR 2025]
 - IIANet: An Intra- and Inter-Modality Attention Network for Audio-Visual Speech Separation [ICML 2024]
 - Clear Voice. https://github.com/modelscope/ClearerVoice-Studio
+
 
 ## Acknowledgements
 The source image used in this codebase was generated with Gemini, and the audio sample was selected from the RealTalk dataset. We would also like to acknowledge the excellent open-source codebases and prior work that inspired and supported this project, including FLOAT, Self-Forcing, Diffusion Forcing, and LIA.

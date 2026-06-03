@@ -620,6 +620,16 @@ blockquote {
     margin: 0;
 }
 
+.video-wrap {
+  width: 75%;
+  margin: 0 auto;
+}
+
+.video-wrap iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
 
 </style>
 
@@ -660,7 +670,6 @@ blockquote {
             <span><sup>2</sup>NTU Singapore</span>&nbsp;&nbsp;&nbsp;
             <span><sup>3</sup>DeepAuto.ai</span> <br>
         </div>
-
         <p class="equal-contrib"><span><sup>*</sup>Equal Contribution</span></p>
         
         <div class="affil-row">
@@ -677,11 +686,13 @@ blockquote {
                 <a class="github-btn" href="https://github.com/TaekyungKi/AvatarForcing">
                     <span class="fab fa-github"></span> 
                     Code
-                </a>           
+                </a>
+                <a class="youtube-btn" href="https://www.youtube.com/watch?v=TARPGnJ8GW4">
+                <span class="fab fa-youtube"></span> 
+                YouTube
+            </a>
         </div>
-        <p style="text-align: center;"> ** The code will be released soon. **</p>
-        <p style="text-align: center;"> All videos in this page contain audio.</p>
-        </div>
+
         <div class="video-carousel auto-carousel" data-carousel="c5" data-autoplay="true">
             <button class="carousel-btn left" onclick="moveCarousel('c5', -1)">&#10094;</button>
             <button class="carousel-btn right" onclick="moveCarousel('c5', 1)">&#10095;</button>
@@ -704,6 +715,27 @@ blockquote {
     <br>
 
     <section>
+        <h2> Abstract</h2>
+        <hr>
+        <div class="video-wrap">
+            <br>
+            <iframe
+                src="https://www.youtube.com/embed/TARPGnJ8GW4"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen>
+            </iframe>
+        </div>
+        <p> 
+        Talking head generation creates lifelike avatars from static portraits for virtual communication and content creation.
+        However, current models do not yet convey the feeling of truly interactive communication, often generating one-way responses that lack emotional engagement.
+        We identify two key challenges toward truly interactive avatars: generating motion in real-time under causal constraints and learning expressive, vibrant reactions without additional labeled data.
+        To address these challenges, we propose Avatar Forcing, a new framework for interactive head avatar generation that models real-time user-avatar interactions through diffusion forcing.
+        This design allows the avatar to process real-time multimodal inputs, including the user's audio and motion, with low latency for instant reactions to both verbal and non-verbal cues such as speech, nods, and laughter.
+        Furthermore, we introduce a direct preference optimization method that leverages synthetic losing samples constructed by dropping user conditions, enabling label-free learning of expressive interaction.
+        Experimental results demonstrate that our framework enables real-time interaction with low latency (approximately 500ms), achieving 6.8X speedup compared to the baseline, and produces reactive and expressive avatar motion, which is preferred over 80% against the baseline.
+        </p>
+        <br>
+
         <h2>Methods</h2>
         <hr>
         <h3>Causal Motion Generation with Diffusion Forcing</h3>
@@ -840,11 +872,13 @@ blockquote {
     <section id="bibtex">
         <h2>Citation</h2>
         <hr>
-        <pre><code>@article{ki2026avatar,
-    title={Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation},
-    author={Ki, Taekyung and Jang, Sangwon and Jo, Jaehyeong and Yoon, Jaehong and Hwang, Sung Ju},
-    journal={arXiv preprint arXiv:2601.00664},
-    year={2026}
+        <pre><code>@InProceedings{Ki_2026_CVPR,
+    author    = {Ki, Taekyung and Jang, Sangwon and Jo, Jaehyeong and Yoon, Jaehong and Hwang, Sung Ju},
+    title     = {Avatar Forcing: Real-Time Interactive Head Avatar Generation for Natural Conversation},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+    month     = {June},
+    year      = {2026},
+    pages     = {18074-18084}
 }
 </code></pre>
 
